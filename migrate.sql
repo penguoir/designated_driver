@@ -1,6 +1,7 @@
 create table events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    destination_location TEXT
+    description TEXT,
+    destination_location TEXT NOT NULL
 );
 
 create table groups (
@@ -9,13 +10,15 @@ create table groups (
 
 create table people (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT,
-    display_name TEXT,
-    role INTEGER,
-    is_organizer BOOLEAN,
-    start_location TEXT,
+    email TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    role INTEGER NOT NULL,
+    is_organizer BOOLEAN NOT NULL,
+    start_location TEXT NOT NULL,
 
-    event_id INTEGER,
+    passenger_capacity INTEGER, -- if role = driver, this can be anything
+
+    event_id INTEGER NOT NULL,
     group_id INTEGER,
 
     FOREIGN KEY(event_id) REFERENCES events(id),
