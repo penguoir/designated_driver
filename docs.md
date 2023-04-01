@@ -29,13 +29,13 @@ POST to /events with an event object (except id) as a JSON body.
 ## ✅ Create a new person
 POST to /people with a person object (except id) as JSON in the body.
 
-## ✅ Retrieve a person's event
-GET to /events?person_id=PERSON_ID. Return value is an event.
+## Retrieve a person's event - NOT DONE
+GET to /people/:id/event. Return value is an event.
 
-## Assign groups
+## Assign groups - NOT DONE
 POST to /events/:id/assign with no body
 
-### ✅ Retrieve groups
+### ✅ Retrieve groups of an event
 GET /events/:id/groups
 
 Example response
@@ -56,19 +56,17 @@ Example response
 ]
 ```
 
-### ✅ Retrieve one group
-GET /events/:id/groups?person_id=1
+### Retrieve the group of one person - NOT DONE
+GET /people/:id/group
 
 Returns only the group that contains person_id
 
 ```json
-[
-    {
-        "id": 1,
-        "people": [
-            { "display_name": "Andrew" ... },
-            { "display_name": "Ori", ...}
-        ]
-    }
-]
+{
+    "id": 1,
+    "people": [
+        { "display_name": "Andrew" ... },
+        { "display_name": "Ori", ...}
+    ]
+}
 ```
