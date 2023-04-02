@@ -3,15 +3,15 @@ class EventMapper:
     def create(cursor, event):
         keys = ','.join(event.keys())
         value_placeholders = ','.join('?' for _ in event)
-        values = tuple(str(x) for x in event.values())
+        values = [str(x) for x in event.values()]
 
         res = cursor.execute(
             f"""
-            INSERT INTO events ({keys})
-            VALUES ({value_placeholders})
+            INSERT INTO events (destination_location, description)
+            VALUES (?, ?)
             RETURNING *
             """,
-            values
+            [event.get('destination_location'), event.get('description')]
         )
 
         new_event = res.fetchone()
