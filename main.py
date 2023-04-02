@@ -10,12 +10,12 @@ app = Flask(__name__)
 DATABASE = 'development.db'
 
 def get_db():
-    sqlite3.register_adapter(bool, int)
-    sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
-
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        sqlite3.register_adapter(bool, int)
+        sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
+
+        db = g._database = sqlite3.connect(DATABASE, detect_types=sqlite3.PARSE_DECLTYPES)
 
     db.row_factory = sqlite3.Row
     return db
@@ -39,28 +39,27 @@ def missing_parameter_error(param):
         400
     )
 
-@app.route("/events", methods=['GET', 'POST'])
+@app.route("/events", methods=['POST'])
 def events():
-    with get_db() as cursor:
-        if request.method == "GET":
-            person_id = request.args.get('person_id')
-
-            if person_id:
-                event = EventMapper.find_by_person(cursor, person_id)
-            else:
-                return missing_parameter_error("person_id")
-
-        if request.method == "POST":
+    if request.method == "POST":
+        with get_db() as cursor:
             person = request.json
             event = EventMapper.create(cursor, person)
 
+        return jsonify(dict(event))
+
+@app.route("/people/<person_id>/event", methods=['GET'])
+def event_of_a_person(person_id):
+    with get_db() as cursor:
+        event = EventMapper.find_by_person(cursor, person_id)
         return jsonify(dict(event))
 
 
 @app.route("/events/<event_id>/assign", methods=['GET', 'POST'])
 def assign_event(event_id):
     with get_db() as cursor:
-        GroupMapper.assign(cursor, event_id)
+        groups = GroupMapper.assign(cursor, event_id)
+        return jsonify(groups)
 
 
 @app.route("/events/<event_id>/groups", methods=['GET'])

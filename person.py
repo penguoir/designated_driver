@@ -16,35 +16,16 @@ class PersonMapper:
 
         return res.fetchone()
 
-    @staticmethod
-    def retrieve_event_groups(cursor, event_id, person_id=None):
-        """Retrieve all people within an event, partitioned into groups"""
 
-        response = cursor.execute(f"""
-        SELECT * FROM people
-            WHERE event_id = ?
-            ORDER BY group_id
-        """, [event_id])
+class Person():
+    def __init__(self, attrs):
+        self.attrs = attrs
 
-        groups = {}
+    def is_passenger(self):
+        return self.attrs['role'] == 0
 
-        # Partition people into groups
-        for person in response:
-            assert person['group_id'], f"Person doesn't have group id {person['id']=}"
-
-            # Create a new partition
-            if not groups.get(person['group_id']):
-                groups[person['group_id']] = list()
-
-            # Add person to its assigned group
-            groups[person['group_id']].append(dict(person))
-
-        if person_id:
-            groups = {group_id: people for group_id, people in groups.items()
-                      if person_id in (person['id'] for person in people)}
-
-        return [{"id": group_id, "people": people} for group_id, people in groups.items()]
-
+    def is_driver(self):
+        return self.attrs['role'] == 1
 
 if __name__ == "__main__":
     from main import app, get_db

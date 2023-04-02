@@ -29,10 +29,10 @@ POST to /events with an event object (except id) as a JSON body.
 ## ✅ Create a new person
 POST to /people with a person object (except id) as JSON in the body.
 
-## Retrieve a person's event - NOT DONE
+## ✅ Retrieve a person's event
 GET to /people/:id/event. Return value is an event.
 
-## Assign groups - NOT DONE
+## ✅ Assign groups
 POST to /events/:id/assign with no body
 
 ### ✅ Retrieve groups of an event

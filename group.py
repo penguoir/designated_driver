@@ -1,4 +1,5 @@
 import itertools
+from person import Person
 
 class GroupMapper:
     @staticmethod
@@ -17,16 +18,74 @@ class GroupMapper:
             'people': [dict(person) for person in people]
         }]
 
+    @staticmethod
+    def assign(cursor, event_id):
+        people = cursor.execute("SELECT * FROM people WHERE event_id = ?", [event_id]).fetchall()
+        group = Group(people)
+        partitions = group.partition()
+
+        for partition in partitions:
+            res = cursor.execute("INSERT INTO groups DEFAULT VALUES RETURNING id").fetchone()
+            group_id = res[0]
+
+            for person in partition:
+                cursor.execute(
+                    """
+                    UPDATE people
+                    SET group_id = ?
+                    WHERE id = ?
+                    """,
+                    [group_id, person['id']]
+                )
+
+        return GroupMapper.find_by_event(cursor, event_id)
+
+    @staticmethod
+    def find_by_event(cursor, event_id, person_id=None):
+        """
+        Retrieve all groups within an event, and the people within them.
+
+        Filter by person_id if passed.
+        """
+
+        response = cursor.execute(f"""
+        SELECT * FROM people
+            WHERE event_id = ?
+            ORDER BY group_id
+        """, [event_id])
+
+        groups = {}
+
+        # Partition people into groups
+        for person in response:
+            assert person['group_id'], f"Person doesn't have group id {person['id']=}"
+
+            # Create a new partition
+            if not groups.get(person['group_id']):
+                groups[person['group_id']] = list()
+
+            # Add person to its assigned group
+            groups[person['group_id']].append(dict(person))
+
+        if person_id:
+            groups = {group_id: people for group_id, people in groups.items()
+                      if person_id in (person['id'] for person in people)}
+
+        return [{"id": group_id, "people": people} for group_id, people in groups.items()]
+
 class Group:
-    def __init__(self, event, people):
+    def __init__(self, people):
         self.people = people
 
-    def assign(self):
+    def partition(self):
+        """
+        Return array of partitions. Each partition has a driver and some passengers.
+        """
         # Assume all drivers are driving
-        # Assume capacity for all drivers
+        # Assume infinite capacity for all drivers
 
-        drivers = [person for person in self.people if person["driver"]]
-        passengers = [person for person in self.people if not person["driver"]]
+        drivers = [person for person in self.people if Person(person).is_driver()]
+        passengers = [person for person in self.people if Person(person).is_passenger()]
         
         groups = [
             [driver] for driver in drivers
