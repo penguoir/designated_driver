@@ -3,7 +3,7 @@ class EventMapper:
     def create(cursor, event):
         keys = ','.join(event)
         value_placeholders = ','.join('?' for _ in event)
-        values = [str(x) for x in event]
+        values = [str(x) for x in event.values()]
 
         res = cursor.execute(
             f"""

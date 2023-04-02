@@ -43,8 +43,8 @@ def missing_parameter_error(param):
 def events():
     if request.method == "POST":
         with get_db() as cursor:
-            person = request.json
-            event = EventMapper.create(cursor, person)
+            event = request.json
+            event = EventMapper.create(cursor, event)
 
         return jsonify(dict(event))
 
