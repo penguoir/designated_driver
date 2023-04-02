@@ -1,9 +1,9 @@
 class EventMapper:
     @staticmethod
     def create(cursor, event):
-        keys = ','.join(event)
+        keys = ','.join(event.keys())
         value_placeholders = ','.join('?' for _ in event)
-        values = [str(x) for x in event.values()]
+        values = tuple(str(x) for x in event.values())
 
         res = cursor.execute(
             f"""
